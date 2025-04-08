@@ -1,0 +1,2 @@
+/home/xuzf/anaconda3/envs/VDTuner/bin/x86_64-conda-linux-gnu-ar qc libefanna2e_s.a CMakeFiles/efanna2e_s.dir/index.cpp.o CMakeFiles/efanna2e_s.dir/index_graph.cpp.o CMakeFiles/efanna2e_s.dir/index_nsg.cpp.o CMakeFiles/efanna2e_s.dir/index_random.cpp.o CMakeFiles/efanna2e_s.dir/multi_graph_builder.cpp.o
+/home/xuzf/anaconda3/envs/VDTuner/bin/x86_64-conda-linux-gnu-ranlib libefanna2e_s.a
