@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   // knn构图
   {
     for (int i = 0; i < num_graphs; i++){
-      int base_idx = 3 + i * 6;
+      int base_idx = 3 + i * 10;
       char* graph_filename = argv[base_idx];
       unsigned K = (unsigned)atoi(argv[base_idx + 1]);
       unsigned L = (unsigned)atoi(argv[base_idx + 2]);
