@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     std::vector<std::vector<unsigned>> gtrue;
     load_ivecs(argv[14], gtrue);
     unsigned L = atoi(argv[11]);
-    std::vector<unsigned> L_values = {L};
+    std::vector<unsigned> L_values = {60, 80, 100, 120, 140, 160, 180, 200};
     EvaluateGraph(query_data, data_load, query_num, dim, 10, gtrue, index_nsg, L_values, argv[15]);
   }
   delete[] data_load;

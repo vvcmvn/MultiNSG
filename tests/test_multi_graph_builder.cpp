@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     std::cout << "data_file num_graph [nn_file K L iter S R nsg_L nsg_R nsg_C nsg_graph] query_file groundtruth_file results_file" << std::endl;
     exit(-1);
   }
-  omp_set_num_threads(omp_get_max_threads()/2);
+  // omp_set_num_threads(omp_get_max_threads()/2);
   // knn构图
   {
     for (int i = 0; i < num_graphs; i++){
