@@ -61,7 +61,7 @@ float ComputeRecall(const std::vector<std::vector<unsigned>>& gtrue,
   const std::vector<std::vector<unsigned>>& results,
   size_t K) {
     unsigned query_num = results.size();
-    float total_recall = 0.0;
+    double total_recall = 0.0;
     for(unsigned i = 0; i < query_num; i++){
       unsigned matches = 0;
       std::unordered_set<unsigned> gtrue_set(gtrue[i].begin(), gtrue[i].begin() + K);
@@ -70,7 +70,7 @@ float ComputeRecall(const std::vector<std::vector<unsigned>>& gtrue,
           matches++;
         }
       }
-      total_recall += static_cast<float>(matches) / K;
+      total_recall += static_cast<double>(matches) / K;
     }
     return query_num > 0 ? total_recall / query_num : 0.0f;
 }

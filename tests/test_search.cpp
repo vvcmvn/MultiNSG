@@ -61,7 +61,7 @@ float ComputeRecall(const std::vector<std::vector<unsigned>>& gtrue,
   const std::vector<std::vector<unsigned>>& results,
   size_t K) {
     unsigned query_num = results.size();
-    float total_recall = 0.0;
+    double total_recall = 0.0;
     for(unsigned i = 0; i < query_num; i++){
       unsigned matches = 0;
       std::unordered_set<unsigned> gtrue_set(gtrue[i].begin(), gtrue[i].begin() + K);
@@ -70,7 +70,7 @@ float ComputeRecall(const std::vector<std::vector<unsigned>>& gtrue,
           matches++;
         }
       }
-      total_recall += static_cast<float>(matches) / K;
+      total_recall += static_cast<double>(matches) / K;
     }
     return query_num > 0 ? total_recall / query_num : 0.0f;
 }
@@ -176,8 +176,8 @@ int main(int argc, char** argv) {
     std::vector<std::vector<unsigned>> gtrue;
     load_ivecs(argv[14], gtrue);
     unsigned L = atoi(argv[11]);
-    std::vector<unsigned> L_values = {60, 80, 100, 120, 140, 160, 180, 200};
-    EvaluateGraph(query_data, data_load, query_num, dim, 10, gtrue, index_nsg, L_values, argv[15]);
+    std::vector<unsigned> L_values = {60, 80, 100, 120, 140, 160, 180, 200, 240, 280, 320};
+    EvaluateGraph(query_data, data_load, query_num, dim, 100, gtrue, index_nsg, L_values, argv[15]);
   }
   delete[] data_load;
   return 0;

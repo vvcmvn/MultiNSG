@@ -742,8 +742,8 @@ void MultiGraphBuilder::EvaluateGraphs(const float* query_data, const size_t que
     std::ofstream structure_out(structure_filename);
     std::ofstream performance_out(performance_filename);
     double total_time = 0.0;
+    unsigned i = 0;
     for(auto& config : graph_configs_){
-        unsigned i = 0;
         std::vector<std::vector<unsigned>> search_result(query_num, std::vector<unsigned>(K));
         std::vector<double> run_times(REPEAT_COUNT);
         std::string graph_id = "graph" + std::to_string(i);
@@ -767,7 +767,7 @@ void MultiGraphBuilder::EvaluateGraphs(const float* query_data, const size_t que
         
         for(unsigned L : L_values){
             total_time = 0.0;
-            for(size_t j = 0; j < 10; j++){
+            for(size_t j = 0; j < REPEAT_COUNT; j++){
                 auto perf_start = std::chrono::high_resolution_clock::now();
                 for(size_t i = 0; i < query_num; i++){
                     std::vector<unsigned> tmp(K);
@@ -783,26 +783,11 @@ void MultiGraphBuilder::EvaluateGraphs(const float* query_data, const size_t que
             }
             double qps = query_num / (total_time / (REPEAT_COUNT - 1));
             float recall = ComputeRecall(gtrue, search_result, K);
-            
-            // result_out << "search_L: " << L << " Recall: " << recall << " QPS: " << qps << std::endl;
-            // save_result(argv[6], res);
             results.push_back(GraphEvalResult{graph_id, L, recall, qps});
         }
         i++;
-        // for (const auto& res : results) {
-        // // std::cout << std::setw(12) << std::fixed << std::setprecision(4) << res.recall 
-        // //           << std::setw(12) << std::fixed << std::setprecision(1) << res.qps 
-        // //           << std::endl;
-        // result_out << res.graph_id << "," 
-        //            << res.search_L << "," 
-        //            << res.recall << "," 
-        //            << res.qps << std::endl;
-        // }
     }
     for (const auto& res : results) {
-        std::cout << std::setw(12) << std::fixed << std::setprecision(4) << res.recall 
-                  << std::setw(12) << std::fixed << std::setprecision(1) << res.qps 
-                  << std::endl;
         performance_out << res.graph_id << "," 
                    << res.search_L << "," 
                    << res.recall << "," 

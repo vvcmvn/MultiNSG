@@ -1,1 +1,0 @@
-/usr/bin/c++  -fopenmp -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -g -rdynamic CMakeFiles/test.dir/test.cpp.o -o test  ../src/libefanna2e.a

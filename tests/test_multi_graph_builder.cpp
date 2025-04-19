@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
   // 检查参数数量是否足够
   if (argc != 3 + num_graphs * 10 + 3) {
     std::cout << "data_file num_graph [nn_file K L iter S R nsg_L nsg_R nsg_C nsg_graph] query_file groundtruth_file results_file" << std::endl;
+    std::cout << "argc" << argc << std::endl;
     exit(-1);
   }
   // omp_set_num_threads(omp_get_max_threads()/2);
@@ -141,10 +142,10 @@ int main(int argc, char** argv) {
 
     std::vector<std::vector<unsigned>> gtrue;
     load_ivecs(argv[base_id + 1], gtrue);
-    std::vector<unsigned> L_values = {100};
+    std::vector<unsigned> L_values = {60, 80, 100, 120, 140, 160, 180, 200};
     builder.EvaluateGraphs(query_data, query_num, 100, L_values,
                           gtrue, argv[base_id + 2]);
   }
-  delete[] data_load;
+  // delete[] data_load;
   return 0;
 }
