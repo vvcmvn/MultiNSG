@@ -442,7 +442,6 @@ void IndexNSG::Build(size_t n, const float *data, const Parameters &parameters) 
   SimpleNeighbor *cut_graph_ = new SimpleNeighbor[nd_ * (size_t)range];
   Link(parameters, cut_graph_);
   final_graph_.resize(nd_);
-
   for (size_t i = 0; i < nd_; i++) {
     SimpleNeighbor *pool = cut_graph_ + i * (size_t)range;
     unsigned pool_size = 0;

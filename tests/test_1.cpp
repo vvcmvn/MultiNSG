@@ -127,48 +127,50 @@ void EvaluateGraph(const float* query_data, const float* data_load, unsigned que
   structure_out.close();
 }
 
-int main(int argc, char** argv) {
-    if (argc != 16) {
+int main(int argc, char **argv)
+{
+  if (argc != 16)
+  {
     std::cout << "data_file nn_file K L iter S R nsg_L nsg_R nsg_C nsg_graph query_file groundtruth_file log_file" << std::endl;
     exit(-1);
-    }
-    float* data_load = NULL;
+  }
+  float *data_load = NULL;
 
-    unsigned points_num, dim;
-    load_data(argv[1], data_load, points_num, dim);
+  unsigned points_num, dim;
+  load_data(argv[1], data_load, points_num, dim);
 
-    // omp_set_num_threads(omp_get_max_threads()/2);
+  // omp_set_num_threads(omp_get_max_threads()/2);
   // knn
-    auto graph_filename = argv[2];
-    auto K = (unsigned)atoi(argv[3]);
-    auto L = (unsigned)atoi(argv[4]);
-    auto iter = (unsigned)atoi(argv[5]);
-    auto S = (unsigned)atoi(argv[6]);
-    auto R = (unsigned)atoi(argv[7]);
-    efanna2e::IndexRandom init_index(dim, points_num);
-    efanna2e::IndexGraph index(dim, points_num, efanna2e::L2, (efanna2e::Index*)(&init_index));
-    efanna2e::Parameters paras;
-    paras.Set<unsigned>("K", K);
-    paras.Set<unsigned>("L", L);
-    paras.Set<unsigned>("iter", iter);
-    paras.Set<unsigned>("S", S);
-    paras.Set<unsigned>("R", R);
-    index.Build(points_num, data_load, paras);
-    index.Save(graph_filename);
-    auto nsg_filename = argv[12];
-    auto nsg_L = (unsigned)atoi(argv[8]);
-    auto nsg_R = (unsigned)atoi(argv[9]);
-    auto nsg_C = (unsigned)atoi(argv[10]);
-    efanna2e::IndexNSG index_nsg(dim, points_num, efanna2e::L2, nullptr);
-    efanna2e::Parameters paras_nsg;
-    paras_nsg.Set<unsigned>("L", nsg_L);
-    paras_nsg.Set<unsigned>("R", nsg_R);
-    paras_nsg.Set<unsigned>("C", nsg_C);
-    paras_nsg.Set<std::string>("nn_graph_path", graph_filename);
-    index_nsg.Build(points_num, data_load, paras_nsg);
-    index_nsg.Save(nsg_filename);
+  auto graph_filename = argv[2];
+  auto K = (unsigned)atoi(argv[3]);
+  auto L = (unsigned)atoi(argv[4]);
+  auto iter = (unsigned)atoi(argv[5]);
+  auto S = (unsigned)atoi(argv[6]);
+  auto R = (unsigned)atoi(argv[7]);
+  efanna2e::IndexRandom init_index(dim, points_num);
+  efanna2e::IndexGraph index(dim, points_num, efanna2e::L2, (efanna2e::Index *)(&init_index));
+  efanna2e::Parameters paras;
+  paras.Set<unsigned>("K", K);
+  paras.Set<unsigned>("L", L);
+  paras.Set<unsigned>("iter", iter);
+  paras.Set<unsigned>("S", S);
+  paras.Set<unsigned>("R", R);
+  index.Build(points_num, data_load, paras);
+  index.Save(graph_filename);
+  auto nsg_filename = argv[12];
+  auto nsg_L = (unsigned)atoi(argv[8]);
+  auto nsg_R = (unsigned)atoi(argv[9]);
+  auto nsg_C = (unsigned)atoi(argv[10]);
+  efanna2e::IndexNSG index_nsg(dim, points_num, efanna2e::L2, nullptr);
+  efanna2e::Parameters paras_nsg;
+  paras_nsg.Set<unsigned>("L", nsg_L);
+  paras_nsg.Set<unsigned>("R", nsg_R);
+  paras_nsg.Set<unsigned>("C", nsg_C);
+  paras_nsg.Set<std::string>("nn_graph_path", graph_filename);
+  index_nsg.Build(points_num, data_load, paras_nsg);
+  index_nsg.Save(nsg_filename);
   {
-    float* query_data = nullptr;
+    float *query_data = nullptr;
     unsigned query_num;
     load_data(argv[13], query_data, query_num, dim);
 
