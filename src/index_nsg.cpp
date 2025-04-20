@@ -5,6 +5,9 @@
 #include <chrono>
 #include <cmath>
 #include <boost/dynamic_bitset.hpp>
+#include <unordered_set>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 
 #include "efanna2e/exceptions.h"
 #include "efanna2e/parameters.h"
@@ -728,5 +731,132 @@ void IndexNSG::tree_grow(const Parameters &parameter) {
       width = final_graph_[i].size();
     }
   }
+}
+float IndexNSG::ComputeRecall(const std::vector<std::vector<unsigned>> &gtrue,
+                              const std::vector<std::vector<unsigned>> &results,
+                              size_t K) const
+{
+  unsigned query_num = results.size();
+    double total_recall = 0.0;
+    for(unsigned i = 0; i < query_num; i++){
+      unsigned matches = 0;
+      std::unordered_set<unsigned> gtrue_set(gtrue[i].begin(), gtrue[i].begin() + K);
+      for(size_t j = 0; j < K; j++){
+        if(gtrue_set.find(results[i][j]) != gtrue_set.end()){
+          matches++;
+        }
+      }
+      total_recall += static_cast<double>(matches) / K;
+    }
+    return query_num > 0 ? total_recall / query_num : 0.0f;
+}
+IndexNSG::GraphStats IndexNSG::GetGraphStats() const {
+  GraphStats stats;
+
+  boost::accumulators::accumulator_set<double, boost::accumulators::stats<
+                                                   boost::accumulators::tag::mean,
+                                                   boost::accumulators::tag::variance,
+                                                   boost::accumulators::tag::skewness,
+                                                   boost::accumulators::tag::kurtosis>>
+      acc;
+  boost::accumulators::accumulator_set<double, boost::accumulators::stats<
+                                                   boost::accumulators::tag::mean>>
+      acc_first_to_last;
+  boost::accumulators::accumulator_set<double, boost::accumulators::stats<
+                                                   boost::accumulators::tag::mean>>
+      acc_first_to_mid;
+  for (size_t i = 0; i < nd_; i++) {
+    unsigned degree = final_graph_[i].size();
+    acc(degree);
+    if(degree >= 2){
+      unsigned mid = degree / 2;
+      float dist_to_first = distance_->compare(data_ + dimension_ * i,
+                                              data_ + dimension_ * final_graph_[i][0],
+                                              (unsigned)dimension_);
+      float dist_to_mid = distance_->compare(data_ + dimension_ * i,
+                                              data_ + dimension_ * final_graph_[i][mid],
+                                              (unsigned)dimension_);
+      float dist_to_last = distance_->compare(data_ + dimension_ * i,
+                                              data_ + dimension_ * final_graph_[i][degree - 1],
+                                              (unsigned)dimension_);
+      if(dist_to_mid > 0 && dist_to_last > 0){
+        float ratio_mid = dist_to_first / dist_to_mid;
+        float ratio_last = dist_to_first / dist_to_last;
+        acc_first_to_mid(ratio_mid);
+        acc_first_to_last(ratio_last);
+      }
+    }
+  }
+  
+  stats.avg_degree = boost::accumulators::mean(acc);
+  stats.deg_variance = boost::accumulators::variance(acc);
+  stats.skewness = boost::accumulators::skewness(acc);
+  stats.kurtosis = boost::accumulators::kurtosis(acc);
+  stats.avg_first_to_last_ratio = boost::accumulators::mean(acc_first_to_last);
+  stats.avg_first_to_mid_ratio = boost::accumulators::mean(acc_first_to_mid);
+  return stats;
+}
+IndexNSG::QueryResult IndexNSG::GetQueryResult(const float *query_data,
+                                              unsigned query_num,
+                                              unsigned K,
+                                              const std::vector<std::vector<unsigned>> &ground_truth,
+                                              unsigned L) const
+{
+  QueryResult result;
+  Parameters paras;
+  paras.Set<unsigned>("L_search", L);
+  paras.Set<unsigned>("P_search", L);
+
+  std::vector<std::vector<unsigned>> search_results(query_num, std::vector<unsigned>(K));
+  const int REPEAT_COUNT = 5;
+  std::vector<double> run_times(REPEAT_COUNT);
+  double total_time = 0.0;
+
+  for (int j = 0; j < REPEAT_COUNT; j++)
+  {
+    auto s = std::chrono::high_resolution_clock::now();
+    for (unsigned i = 0; i < query_num; i++)
+    {
+      const_cast<IndexNSG *>(this)->Search(query_data + i * dimension_, data_, K, paras, search_results[i].data());
+    }
+    auto e = std::chrono::high_resolution_clock::now();
+    run_times[j] = std::chrono::duration<double>(e - s).count();
+  }
+  for (int run = 1; run < REPEAT_COUNT; run++)
+  {
+    total_time += run_times[run];
+  }
+  result.qps = query_num / (total_time / (REPEAT_COUNT - 1));
+  result.recall = ComputeRecall(ground_truth, search_results, K);
+  result.avg_path_length = 0.0;
+  return result;
+}
+void IndexNSG::EvaluateGraph(const float *query_data,
+                            unsigned query_num,
+                            unsigned K,
+                            const std::vector<std::vector<unsigned>> &gtrue,
+                            const std::vector<unsigned> &L_values,
+                            const char* outputfile) const
+{
+  const int REPEAT_COUNT = 5;
+  std::string structure_filename = std::string(outputfile) + "_structure.csv";
+  std::string performacnee_filename = std::string(outputfile) + "_performance.csv";
+  std::ofstream structure_out(structure_filename);
+  std::ofstream performance_out(performacnee_filename);
+  GraphStats stats = GetGraphStats();
+  structure_out << stats.avg_degree << "," 
+                << stats.deg_variance << ","
+                << stats.skewness << ","
+                << stats.kurtosis << ","
+                << stats.avg_first_to_last_ratio << ","
+                << stats.avg_first_to_mid_ratio << std::endl;
+  for (const auto&L : L_values) {
+   QueryResult result = GetQueryResult(query_data, query_num, K, gtrue, L);
+    performance_out << L << "," 
+    << result.recall << "," 
+    << result.qps << std::endl;
+  }
+  performance_out.close();
+  structure_out.close();
 }
 }
