@@ -79,7 +79,10 @@ int main(int argc, char** argv) {
   // omp_set_num_threads(omp_get_max_threads()/2);
   // knn构图
   {
+    
     for (int i = 0; i < num_graphs; i++){
+      efanna2e::IndexRandom init_index(dim, points_num);
+      efanna2e::IndexGraph index(dim, points_num, efanna2e::L2, (efanna2e::Index*)(&init_index));
       int base_idx = 3 + i * 10;
       char* graph_filename = argv[base_idx];
       unsigned K = (unsigned)atoi(argv[base_idx + 1]);
@@ -87,8 +90,6 @@ int main(int argc, char** argv) {
       unsigned iter = (unsigned)atoi(argv[base_idx + 3]);
       unsigned S = (unsigned)atoi(argv[base_idx + 4]);
       unsigned R = (unsigned)atoi(argv[base_idx + 5]);
-      efanna2e::IndexRandom init_index(dim, points_num);
-      efanna2e::IndexGraph index(dim, points_num, efanna2e::L2, (efanna2e::Index*)(&init_index));
       efanna2e::Parameters paras;
       paras.Set<unsigned>("K", K);
       paras.Set<unsigned>("L", L);

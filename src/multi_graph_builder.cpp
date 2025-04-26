@@ -232,11 +232,9 @@ void MultiGraphBuilder::FindNeighbors(unsigned query_id,
     int k = 0;
     while (k < (int)L) {
         int nk = L;
-        
         if (retset[k].flag) {
             retset[k].flag = false;
             unsigned n = retset[k].id;
-            
             for (unsigned m = 0; m < graph[n].size(); m++) {
                 unsigned id = graph[n][m];
                 if (flags[id]) continue;
