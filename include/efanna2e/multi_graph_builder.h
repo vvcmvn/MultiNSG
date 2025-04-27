@@ -13,29 +13,30 @@ namespace efanna2e {
 
 class MultiGraphBuilder {
 public:
+    typedef std::vector<std::vector<unsigned>> CompactGraph;
     MultiGraphBuilder(const size_t dimension, const size_t n, Metric m);
     ~MultiGraphBuilder();
     
     // 每个图使用不同的近邻图
-    void AddGraphConfig(const Parameters& parameters, const std::string& save_path, 
-                        const std::string& nn_graph_path);
-    
+    void AddGraphConfig(const Parameters &parameters, const std::string &save_path,
+                        const std::string &nn_graph_path);
+    void AddGraphConfig(const Parameters &parameters, const std::string &save_path,
+                        const CompactGraph &&final_graph);
     // 构建所有图
-    void BuildAllGraphs(const float* data);
+    void BuildAllGraphs(const float *data);
 
-    void EvaluateGraphs(const float* query_data, const size_t query_num
-        , const size_t K, const std::vector<unsigned>& L_values, const std::vector<std::vector<unsigned>>& gtrue, const char* output_file);
-    
-        
-    
-    
+    void EvaluateGraphs(const float *query_data, const size_t query_num, const size_t K,
+                        const std::vector<unsigned> &L_values, const std::vector<std::vector<unsigned>> &gtrue, const char *output_file);
+    void EvaluateGraphs(const float *query_data, const size_t query_num, const size_t K,
+                        const std::vector<std::vector<unsigned>> &gtrue);
+
 private:
     // 计算并缓存查询点的距离
-    typedef std::vector<std::vector<unsigned>> CompactGraph;
+
     struct GraphConfig;
     void Search(const float *query, const size_t K, const size_t L, const GraphConfig &graph_config, unsigned *indices);
-    float GetPointDistance(unsigned query_id, unsigned other_id, std::vector<float>& point_distances, 
-                            boost::dynamic_bitset<>& computed_flags);
+    float GetPointDistance(unsigned query_id, unsigned other_id, std::vector<float> &point_distances,
+                           boost::dynamic_bitset<> &computed_flags);
 
     float GetPointDistance(unsigned query_id, unsigned other_id, std::vector<float>& point_distances);
     void DFS(boost::dynamic_bitset<>& flag, 
@@ -135,12 +136,11 @@ private:
     struct GraphConfig {
         Parameters parameters;
         std::string save_path;
-        std::string nn_graph_path;     // 每个图有自己的近邻图路径
-        CompactGraph nn_graph;      // 构建的最终图
-        CompactGraph final_graph;      // 构建的最终图
-        SimpleNeighbor* cut_graph = nullptr;  // 临时图结构，每个图独立
-        unsigned ep;                   // 入口点
-        unsigned width = 0;            // 图宽度
+        std::string nn_graph_path;    
+        CompactGraph final_graph;//knn图
+        SimpleNeighbor* cut_graph = nullptr;  
+        unsigned ep;                   
+        unsigned width = 0;          
     };
     // 基本属性
     const size_t dimension_;

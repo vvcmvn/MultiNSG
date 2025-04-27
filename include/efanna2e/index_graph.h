@@ -39,13 +39,14 @@ class IndexGraph : public Index {
       size_t k,
       const Parameters &parameters,
       unsigned *indices) override;
-
+  typedef std::vector<std::vector<unsigned > > CompactGraph;
   void GraphAdd(const float* data, unsigned n, unsigned dim, const Parameters &parameters);
   void RefineGraph(const float* data, const Parameters &parameters);
-
+  CompactGraph&& ExtractFinalGraph() {
+    return std::move(final_graph_);
+  }
  protected:
   typedef std::vector<nhood> KNNGraph;
-  typedef std::vector<std::vector<unsigned > > CompactGraph;
   typedef std::vector<LockNeighbor> LockGraph;
 
   Index *initializer_;

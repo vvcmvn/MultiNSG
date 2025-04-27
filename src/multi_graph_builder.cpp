@@ -58,6 +58,16 @@ void MultiGraphBuilder::AddGraphConfig(const Parameters& parameters, const std::
     graph_configs_.push_back(config);
 }
 
+void MultiGraphBuilder::AddGraphConfig(const Parameters& parameters, const std::string& save_path, 
+    const CompactGraph&& finial_graph) {
+    GraphConfig config;
+    config.parameters = parameters;
+    config.save_path = save_path;
+    config.final_graph = std::move(finial_graph);
+    config.width = parameters.Get<unsigned>("R");
+    graph_configs_.push_back(std::move(config));
+}
+
 float MultiGraphBuilder::GetPointDistance(unsigned query_id, unsigned other_id, 
                                         std::vector<float>& point_distances,
                                         boost::dynamic_bitset<>& computed_flags) {
@@ -561,9 +571,14 @@ void MultiGraphBuilder::BuildAllGraphs(const float* data) {
     srand(42);  // 使用固定种子42
     for (auto& config : graph_configs_) {
         std::cout << "Loading nn_graph from: " << config.nn_graph_path << std::endl;
-        LoadNNGraph(config.nn_graph_path, config.final_graph);
-
-        // 初始化图结构
+        if (!config.nn_graph_path.empty()) {
+            // 从文件加载图
+            std::cout << "Loading nn_graph from: " << config.nn_graph_path << std::endl;
+            LoadNNGraph(config.nn_graph_path, config.final_graph);
+        } else {
+            // 如果通过 std::move 初始化，直接使用 final_graph
+            std::cout << "Using pre-initialized final_graph." << std::endl;
+        }
         config.final_graph.resize(n_);
         InitGraph(config.parameters, config.final_graph, config.ep);
 
@@ -794,6 +809,39 @@ void MultiGraphBuilder::EvaluateGraphs(const float* query_data, const size_t que
     structure_out.close();
     performance_out.close();
 }
+
+void MultiGraphBuilder::EvaluateGraphs(const float *query_data, const size_t query_num, const size_t K,
+    const std::vector<std::vector<unsigned>> &gtrue){
+        double total_time = 0.0;
+        for(auto& config: graph_configs_){
+            std::vector<std::vector<unsigned>> search_result(query_num, std::vector<unsigned>(K));
+            unsigned L = config.parameters.Get<unsigned>("Search_L");
+            std::string performance_filename = config.parameters.Get<std::string>("performance_log") + "_performance.csv";
+            std::ofstream performance_out(performance_filename);
+            std::vector<double> run_times(REPEAT_COUNT);
+            total_time = 0.0;
+            for(size_t j = 0; j < REPEAT_COUNT; j++){
+                
+                auto perf_start = std::chrono::high_resolution_clock::now();
+                for(size_t i = 0; i < query_num; i++){
+                    Search(query_data + i * dimension_, K, L, config, search_result[i].data());
+                }
+                auto perf_end = std::chrono::high_resolution_clock::now();
+                run_times[j] = (std::chrono::duration<double>(perf_end - perf_start).count());
+                // std::cout << "search_L: " << L << " run: " << j << " time: " << run_times[j] << std::endl;
+            }
+            //skip the first run
+            for(int run = 1; run < REPEAT_COUNT; run++){
+                total_time += run_times[run];
+            }
+            double qps = query_num / (total_time / (REPEAT_COUNT - 1));
+            float recall = ComputeRecall(gtrue, search_result, K);
+            performance_out << L << "," 
+                        << recall << "," 
+                        << qps << std::endl;
+            performance_out.close();
+        }
+    }
 
 float MultiGraphBuilder::ComputeRecall(const std::vector<std::vector<unsigned>>& gtrue,
                                     const std::vector<std::vector<unsigned>>& results,

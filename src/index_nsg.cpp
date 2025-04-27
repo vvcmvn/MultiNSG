@@ -806,9 +806,8 @@ IndexNSG::QueryResult IndexNSG::GetQueryResult(const float *query_data,
   Parameters paras;
   paras.Set<unsigned>("L_search", L);
   paras.Set<unsigned>("P_search", L);
-
+  const int REPEAT_COUNT = 10;
   std::vector<std::vector<unsigned>> search_results(query_num, std::vector<unsigned>(K));
-  const int REPEAT_COUNT = 5;
   std::vector<double> run_times(REPEAT_COUNT);
   double total_time = 0.0;
 
@@ -838,7 +837,6 @@ void IndexNSG::EvaluateGraph(const float *query_data,
                             const std::vector<unsigned> &L_values,
                             const char* outputfile) const
 {
-  const int REPEAT_COUNT = 5;
   std::string structure_filename = std::string(outputfile) + "_structure.csv";
   std::string performacnee_filename = std::string(outputfile) + "_performance.csv";
   std::ofstream structure_out(structure_filename);

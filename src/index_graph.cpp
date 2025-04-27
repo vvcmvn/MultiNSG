@@ -275,13 +275,16 @@ void IndexGraph::Build(size_t n, const float *data, const Parameters &parameters
   std::cout << nd_ << std::endl;
   unsigned K = parameters.Get<unsigned>("K");
   for (unsigned i = 0; i < nd_; i++) {
-    assert(graph_[i].pool.size() >= K);
+    // assert(graph_[i].pool.size() >= K);
     std::vector<unsigned> tmp;
     std::sort(graph_[i].pool.begin(), graph_[i].pool.end());
-    for (unsigned j = 0; j < K; j++) {
+    // for (unsigned j = 0; j < K; j++) {
+    //   tmp.push_back(graph_[i].pool[j].id);
+    // }
+    tmp.reserve(K);
+    for (unsigned j = 0; j < graph_[i].pool.size() && j < K; j++) {
       tmp.push_back(graph_[i].pool[j].id);
     }
-    tmp.reserve(K);
     final_graph_.push_back(tmp);
     std::vector<Neighbor>().swap(graph_[i].pool);
     std::vector<unsigned>().swap(graph_[i].nn_new);
