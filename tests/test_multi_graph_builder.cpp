@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 
   if (argc != 3 + num_graphs * 12 + 2) {
     std::cout << "Usage: "<< argv[0] << " data_file num_graph [nn_file K L iter S R nsg_L nsg_R nsg_C search_L performance_log nsg_graph] query_file groundtruth_file" << std::endl;
-    std::cout << "argc" << argc << std::endl;
+    std::cout << "argc: " << argc << std::endl;
     exit(-1);
   }
   efanna2e::MultiGraphBuilder builder(dim, points_num, efanna2e::L2);
@@ -120,7 +120,6 @@ int main(int argc, char** argv) {
     }
   }
   auto s = std::chrono::high_resolution_clock::now();
-  // 构建所有图
   std::cout << std::endl << "开始构建 " << num_graphs << " 个图..." << std::endl;
   builder.BuildAllGraphs(data_load);
   

@@ -178,6 +178,7 @@ int main(int argc, char **argv)
     load_ivecs(argv[14], gtrue);
     unsigned L = atoi(argv[11]);
     std::vector<unsigned> L_values = {L};
+    // std::vector<unsigned> L_values = {18, 20, 22, 24, 26, 28, 30, 35, 40, 45, 50, 60, 70, 90, 100, 120，150, 200};
     index_nsg.EvaluateGraph(query_data, query_num, 10, gtrue, L_values, argv[15]);
   }
   delete[] data_load;
